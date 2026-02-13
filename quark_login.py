@@ -41,7 +41,7 @@ class QuarkLogin:
             page = self.context.pages[0]
             page.goto('https://pan.quark.cn/')
 
-            input("请在弹出的浏览器中登录夸克，登录成功后请勿手动关闭浏览器，回到本界面按 Enter 键继续...")
+            input("Silakan masuk ke Quark melalui jendela pop-up. Setelah berhasil masuk, jangan tutup jendela pop-up secara manual. Kembali ke halaman ini dan tekan Enter untuk melanjutkan....")
             self.save_cookies(page)
 
     @staticmethod
