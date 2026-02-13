@@ -47,18 +47,18 @@ def read_config(path: str, read_type: str = None, mode: str = 'r') -> Union[dict
 
 def safe_copy(src, dst):
     if not os.path.exists(src):
-        print(f"源文件不存在，跳过复制：{src}")
+        print(f"Berkas sumber tidak ada; lewati proses penyalinan.：{src}")
         return
 
     if os.path.exists(dst):
         os.remove(dst)
-        print(f"目标文件已存在，已删除：{dst}")
+        print(f"Berkas target sudah ada dan telah dihapus.：{dst}")
 
     try:
         shutil.copy(src, dst)
-        print(f"文件已复制到：{dst}")
+        print(f"Berkas telah disalin.：{dst}")
     except Exception as e:
-        print('备份share_url.txt文件错误，', e)
+        print('Terjadi kesalahan saat mencadangkan file share_url.txt，', e)
 
 
 def generate_random_code(length=4):
