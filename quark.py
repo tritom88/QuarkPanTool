@@ -65,7 +65,7 @@ class QuarkPanFileManager:
                 stoken = json_data["data"]["stoken"]
             else:
                 stoken = ''
-                custom_print(f"文件转存失败，{json_data['message']}")
+                custom_print(f"Transfer berkas gagal，{json_data['message']}")
             return stoken
 
     async def get_detail(self, pwd_id: str, stoken: str, pdir_fid: str = '0') -> str | tuple | None:
@@ -99,8 +99,8 @@ class QuarkPanFileManager:
                 if _total < 1:
                     return is_owner, file_list
 
-                _size = json_data['metadata']['_size']  # 每页限制数量
-                _count = json_data['metadata']['_count']  # 当前页数量
+                _size = json_data['metadata']['_size']  # Jumlah halaman per halaman
+                _count = json_data['metadata']['_count']  # Jumlah halaman saat ini
 
                 _list = json_data["data"]["list"]
 
@@ -160,11 +160,11 @@ class QuarkPanFileManager:
                 nickname = json_data['data']['nickname']
                 return nickname
             else:
-                input("登录失败！请重新运行本程序，然后在弹出的浏览器中登录夸克账号")
+                input("Login gagal! Silakan jalankan program ini lagi dan kemudian masuk ke akun Quark Anda di browser pop-up.")
                 with open(f'{CONFIG_DIR}/cookies.txt', 'w', encoding='utf-8'):
                     sys.exit(-1)
 
-    async def create_dir(self, pdir_name='新建文件夹') -> None:
+    async def create_dir(self, pdir_name='Folder Baru') -> None:
         params = {
             'pr': 'ucpro',
             'fr': 'pc',
@@ -186,26 +186,26 @@ class QuarkPanFileManager:
                                          json=json_data, headers=self.headers, timeout=timeout)
             json_data = response.json()
             if json_data["code"] == 0:
-                custom_print(f'根目录下 {pdir_name} 文件夹创建成功！')
+                custom_print(f'Direktori akar {pdir_name} Folder berhasil dibuat.！')
                 new_config = {'user': self.user, 'pdir_id': json_data["data"]["fid"], 'dir_name': pdir_name}
                 save_config(f'{CONFIG_DIR}/config.json', content=json.dumps(new_config, ensure_ascii=False))
                 global to_dir_id
                 to_dir_id = json_data["data"]["fid"]
-                custom_print(f"自动将保存目录切换至 {pdir_name} 文件夹")
+                custom_print(f"Secara otomatis mengganti direktori penyimpanan ke {pdir_name} Map")
             elif json_data["code"] == 23008:
-                custom_print('文件夹同名冲突，请更换一个文件夹名称后重试', error_msg=True)
+                custom_print('Terjadi konflik nama folder, silakan coba lagi setelah mengubah nama folder.', error_msg=True)
             else:
-                custom_print(f"错误信息：{json_data['message']}", error_msg=True)
+                custom_print(f"pesan kesalahan：{json_data['message']}", error_msg=True)
 
     async def run(self, input_line: str, folder_id: Union[str, None] = None, download: bool = False) -> None:
         self.folder_id = folder_id
         share_url = input_line.strip()
-        custom_print(f'文件分享链接：{share_url}')
+        custom_print(f'Tautan berbagi file：{share_url}')
         match_password = re.search("pwd=(.*?)(?=$|&)", share_url)
         password = match_password.group(1) if match_password else ""
         pwd_id = self.get_pwd_id(input_line).split("#")[0]
         if not pwd_id:
-            custom_print('文件分享链接不可为空！', error_msg=True)
+            custom_print('Tautan berbagi file tidak boleh kosong.！', error_msg=True)
             return
         stoken = await self.get_stoken(pwd_id, password)
         if not stoken:
@@ -234,21 +234,21 @@ class QuarkPanFileManager:
                     files_list.append(data["file_name"])
                     files_id_list.append((data["fid"], data["file_name"]))
 
-            custom_print(f'转存总数：{total_files_count}，文件数：{files_count}，文件夹数：{folders_count} | 支持嵌套')
-            custom_print(f'文件转存列表：{files_list}')
-            custom_print(f'文件夹转存列表：{folders_list}')
+            custom_print(f'Jumlah total transfer：{total_files_count}，Jumlah file：{files_count}，Jumlah folder：{folders_count} | Mendukung penestingan')
+            custom_print(f'Daftar Transfer File：{files_list}')
+            custom_print(f'Daftar Transfer Folder：{folders_list}')
 
             fid_list = [i["fid"] for i in data_list]
             share_fid_token_list = [i["share_fid_token"] for i in data_list]
 
             if not self.folder_id:
-                custom_print('保存目录ID不合法，请重新获取，如果无法获取，请输入0作为文件夹ID')
+                custom_print('ID direktori yang tersimpan tidak valid. Silakan ambil kembali. Jika Anda tidak dapat mengambilnya, silakan masukkan 0 sebagai ID folder.')
                 return
 
             if download:
                 if is_owner == 0:
                     custom_print(
-                        '下载文件必须是自己的网盘内文件，请先将文件转存至网盘中，然后再从自己网盘中获取分享地址进行下载')
+                        'File yang akan diunduh harus berada di penyimpanan cloud Anda sendiri. Silakan transfer file tersebut ke penyimpanan cloud Anda terlebih dahulu, lalu dapatkan tautan berbagi dari penyimpanan cloud Anda untuk mengunduhnya.')
                     return
 
                 for i in data_list:
@@ -258,7 +258,7 @@ class QuarkPanFileManager:
                         while True:
                             data_list3 = []
                             for i2 in data_list2:
-                                custom_print(f'开始下载：{i2["file_name"]} 文件夹中的{i2["include_items"]}个文件')
+                                custom_print(f'Mulai mengunduh：{i2["file_name"]} Di dalam folder{i2["include_items"]}berkas')
                                 is_owner, file_data_list = await self.get_detail(pwd_id, stoken, pdir_fid=i2['fid'])
 
                                 # record folder's fid start
@@ -291,7 +291,7 @@ class QuarkPanFileManager:
 
             else:
                 if is_owner == 1:
-                    custom_print('网盘中已经存在该文件，无需再次转存')
+                    custom_print('File tersebut sudah ada di penyimpanan cloud; tidak perlu mentransfernya lagi.')
                     return
                 task_id = await self.get_share_save_task_id(pwd_id, stoken, fid_list, share_fid_token_list,
                                                             to_pdir_fid=self.folder_id)
@@ -318,7 +318,7 @@ class QuarkPanFileManager:
             response = await client.post(task_url, json=data, headers=self.headers, params=params, timeout=timeout)
             json_data = response.json()
             task_id = json_data['data']['task_id']
-            custom_print(f'获取任务ID：{task_id}')
+            custom_print(f'Dapatkan Task ID：{task_id}')
             return task_id
 
     @staticmethod
@@ -378,10 +378,10 @@ class QuarkPanFileManager:
 
                 data_list = json_data.get('data', None)
                 if json_data['status'] != 200:
-                    custom_print(f"文件下载地址列表获取失败, {json_data['message']}", error_msg=True)
+                    custom_print(f"agal mengambil daftar alamat unduhan file., {json_data['message']}", error_msg=True)
                     return
                 elif data_list:
-                    custom_print('文件下载地址列表获取成功')
+                    custom_print('Daftar alamat unduhan file berhasil diambil.')
 
                 save_folder = 'downloads'  # if folder else 'downloads'
                 os.makedirs(save_folder, exist_ok=True)
@@ -389,7 +389,7 @@ class QuarkPanFileManager:
                 for i in data_list:
                     n += 1
                     filename = i["file_name"]
-                    custom_print(f'开始下载第{n}个文件-{filename}')
+                    custom_print(f'Mulai mengunduh yang pertama{n}berkas-{filename}')
 
                     # build save path start
                     base_path = ""
@@ -418,7 +418,7 @@ class QuarkPanFileManager:
 
         for i in range(retry):
             await asyncio.sleep(random.randint(500, 1000) / 1000)
-            custom_print(f'第{i + 1}次提交任务')
+            custom_print(f'TIDAK{i + 1}Kirim tugas')
             submit_url = (f"https://drive-pc.quark.cn/1/clouddrive/task?pr=ucpro&fr=pc&uc_param_str=&task_id={task_id}"
                           f"&retry_index={i}&__dt=21192&__t={get_timestamp(13)}")
 
@@ -432,19 +432,19 @@ class QuarkPanFileManager:
                     if 'to_pdir_name' in json_data['data']['save_as']:
                         folder_name = json_data['data']['save_as']['to_pdir_name']
                     else:
-                        folder_name = ' 根目录'
-                    if json_data['data']['task_title'] == '分享-转存':
-                        custom_print(f"结束任务ID：{task_id}")
-                        custom_print(f'文件保存位置：{folder_name} 文件夹')
+                        folder_name = ' direktori akar'
+                    if json_data['data']['task_title'] == 'Bagikan - Simpan':
+                        custom_print(f"Akhir dari Task ID：{task_id}")
+                        custom_print(f'Lokasi penyimpanan file：{folder_name} Map')
                     return json_data
             else:
                 if json_data['code'] == 32003 and 'capacity limit' in json_data['message']:
-                    custom_print("转存失败，网盘容量不足！请注意当前已成功保存的个数，避免重复保存", error_msg=True)
+                    custom_print("Transfer gagal, ruang penyimpanan cloud tidak mencukupi! Harap perhatikan jumlah item yang sudah berhasil disimpan untuk menghindari penyimpanan ganda.", error_msg=True)
                 elif json_data['code'] == 41013:
-                    custom_print(f"”{to_dir_name}“ 网盘文件夹不存在，请重新运行按3切换保存目录后重试！", error_msg=True)
+                    custom_print(f"”{to_dir_name}“ Folder penyimpanan cloud tidak ada. Silakan jalankan program lagi, tekan 3 untuk mengubah direktori penyimpanan, dan coba lagi!", error_msg=True)
                 else:
-                    custom_print(f"错误信息：{json_data['message']}", error_msg=True)
-                input(f'[{get_datetime()}] 已退出程序')
+                    custom_print(f"pesan kesalahan：{json_data['message']}", error_msg=True)
+                input(f'[{get_datetime()}] Program tersebut telah berakhir.')
                 sys.exit()
 
     def init_config(self, _user, _pdir_id, _dir_name):
@@ -455,12 +455,12 @@ class QuarkPanFileManager:
                 user = json_data.get('user', 'jack')
                 if user != _user:
                     _pdir_id = '0'
-                    _dir_name = '根目录'
+                    _dir_name = 'direktori akar'
                     new_config = {'user': _user, 'pdir_id': _pdir_id, 'dir_name': _dir_name}
                     save_config(f'{CONFIG_DIR}/config.json', content=json.dumps(new_config, ensure_ascii=False))
                 else:
                     _pdir_id = json_data.get('pdir_id', '0')
-                    _dir_name = json_data.get('dir_name', '根目录')
+                    _dir_name = json_data.get('dir_name', 'direktori akar')
         except (json.decoder.JSONDecodeError, FileNotFoundError):
             new_config = {'user': self.user, 'pdir_id': self.pdir_id, 'dir_name': self.dir_name}
             save_config(f'{CONFIG_DIR}/config.json', content=json.dumps(new_config, ensure_ascii=False))
@@ -471,13 +471,13 @@ class QuarkPanFileManager:
         self.user = await self.get_user_info()
         self.user, self.pdir_id, self.dir_name = self.init_config(self.user, self.pdir_id, self.dir_name)
         if not renew:
-            custom_print(f'用户名：{self.user}')
-            custom_print(f'你当前选择的网盘保存目录: {self.dir_name} 文件夹')
+            custom_print(f'nama belakang：{self.user}')
+            custom_print(f'Direktori penyimpanan cloud Anda saat ini: {self.dir_name} Map')
 
         if renew:
-            pdir_id = input(f'[{get_datetime()}] 请输入保存位置的文件夹ID(可为空): ')
+            pdir_id = input(f'[{get_datetime()}] Silakan masukkan ID folder untuk lokasi penyimpanan (boleh kosong): ')
             if pdir_id == '0':
-                self.dir_name = '根目录'
+                self.dir_name = 'direktori akar'
                 new_config = {'user': self.user, 'pdir_id': self.pdir_id, 'dir_name': self.dir_name}
                 save_config(f'{CONFIG_DIR}/config.json', content=json.dumps(new_config, ensure_ascii=False))
 
@@ -486,14 +486,14 @@ class QuarkPanFileManager:
                 fd_list = file_list_data['data']['list']
                 fd_list = [{i['fid']: i['file_name']} for i in fd_list if i.get('dir')]
                 if fd_list:
-                    table = PrettyTable(['序号', '文件夹ID', '文件夹名称'])
+                    table = PrettyTable(['Nomor seri', 'ID Folder', 'Nama Folder'])
                     for idx, item in enumerate(fd_list, 1):
                         key, value = next(iter(item.items()))
                         table.add_row([idx, key, value])
                     print(table)
-                    num = input(f'[{get_datetime()}] 请选择你要保存的位置（输入对应序号）: ')
+                    num = input(f'[{get_datetime()}] Silakan pilih lokasi tempat Anda ingin menyimpan (masukkan nomor yang sesuai). : ')
                     if not num or int(num) > len(fd_list):
-                        custom_print('输入序号不存在，保存目录切换失败', error_msg=True)
+                        custom_print('Nomor seri yang dimasukkan tidak ada; peralihan direktori penyimpanan gagal.', error_msg=True)
                         json_data = read_config(f'{CONFIG_DIR}/config.json', 'json')
                         return json_data['pdir_id'], json_data['dir_name']
 
@@ -577,7 +577,7 @@ class QuarkPanFileManager:
         second_dir = ''
         try:
             self.folder_id = folder_id
-            custom_print(f'文件夹网页地址：{share_url}')
+            custom_print(f'Alamat web folder：{share_url}')
             pwd_id = share_url.rsplit('/', maxsplit=1)[1].split('-')[0]
 
             first_page = 1
@@ -593,8 +593,8 @@ class QuarkPanFileManager:
             # 如果遍历深度为0，直接分享根目录
             if traverse_depth == 0:
                 try:
-                    custom_print('开始分享页面中所有根目录')
-                    task_id = await self.get_share_task_id(pwd_id, "根目录", url_type=url_type,
+                    custom_print('Mulai berbagi semua direktori root di halaman tersebut.')
+                    task_id = await self.get_share_task_id(pwd_id, "direktori akar", url_type=url_type,
                                                            expired_type=expired_type,
                                                            password=password)
                     share_id = await self.get_share_id(task_id)
@@ -602,7 +602,7 @@ class QuarkPanFileManager:
                     with open(save_share_path, 'a', encoding='utf-8') as f:
                         content = f'1 | {title} | {share_url}'
                         f.write(content + '\n')
-                        custom_print(f'分享 {title} 成功')
+                        custom_print(f'membagikan {title} berhasil')
                     return
                 except Exception as e:
                     print('分享失败：', e)
@@ -622,7 +622,7 @@ class QuarkPanFileManager:
                             fid = ''
                             for i in range(3):
                                 try:
-                                    custom_print(f'{n}.开始分享 {first_dir} 文件夹')
+                                    custom_print(f'{n}.Mulai berbagi {first_dir} Map')
                                     random_time = random.choice([0.5, 1, 1.5, 2])
                                     await asyncio.sleep(random_time)
                                     fid = i1['fid']
@@ -634,7 +634,7 @@ class QuarkPanFileManager:
                                     with open(save_share_path, 'a', encoding='utf-8') as f:
                                         content = f'{n} | {first_dir} | {share_url}'
                                         f.write(content + '\n')
-                                        custom_print(f'{n}.分享成功 {first_dir} 文件夹')
+                                        custom_print(f'{n}.Berhasil dibagikan {first_dir} Map')
                                         share_success = True
                                         break
                                 except Exception as e:
@@ -642,7 +642,7 @@ class QuarkPanFileManager:
                                     error += 1
 
                             if not share_success:
-                                print('分享失败：', share_error_msg)
+                                print('Berbagi gagal：', share_error_msg)
                                 save_config('./share/share_error.txt',
                                             content=f'{error}.{first_dir} 文件夹\n', mode='a')
                                 save_config('./share/retry.txt',
@@ -678,7 +678,7 @@ class QuarkPanFileManager:
                                             with open(save_share_path, 'a', encoding='utf-8') as f:
                                                 content = f'{n} | {first_dir} | {second_dir} | {share_url}'
                                                 f.write(content + '\n')
-                                                custom_print(f'{n}.分享成功 {first_dir}/{second_dir} 文件夹')
+                                                custom_print(f'{n}.Berhasil dibagikan {first_dir}/{second_dir} Map')
                                                 share_success = True
                                                 break
 
@@ -687,9 +687,9 @@ class QuarkPanFileManager:
                                             error += 1
 
                                     if not share_success:
-                                        print('分享失败：', share_error_msg)
+                                        print('Berbagi gagal：', share_error_msg)
                                         save_config('./share/share_error.txt',
-                                                    content=f'{error}.{first_dir}/{second_dir} 文件夹\n', mode='a')
+                                                    content=f'{error}.{first_dir}/{second_dir} Map\n', mode='a')
                                         save_config('./share/retry.txt',
                                                     content=f'{n} | {first_dir} | {second_dir} | {fid}\n', mode='a')
                             second_total = json_data2['metadata']['_total']
@@ -705,12 +705,12 @@ class QuarkPanFileManager:
                 if second_size * second_page >= second_total:
                     break
                 first_page += 1
-            custom_print(f"总共分享了 {n} 个文件夹，已经保存至 {save_share_path}")
+            custom_print(f"Sebanyak {n} Folder，Disimpan ke {save_share_path}")
 
         except Exception as e:
-            print('分享失败：', e)
+            print('Berbagi gagal：', e)
             with open('./share/share_error.txt', 'a', encoding='utf-8') as f:
-                f.write(f'{first_dir}/{second_dir} 文件夹')
+                f.write(f'{first_dir}/{second_dir} Map')
 
     async def share_run_retry(self, retry_url: str, url_type: int = 1, expired_type: int = 2, password: str = ''):
 
@@ -736,7 +736,7 @@ class QuarkPanFileManager:
                         with open(save_share_path, 'a', encoding='utf-8') as f:
                             content = f'{n} | {first_dir} | {second_dir} | {share_url}'
                             f.write(content + '\n')
-                            custom_print(f'{n}.分享成功 {first_dir}/{second_dir} 文件夹')
+                            custom_print(f'{n}.Berhasil dibagikan {first_dir}/{second_dir} Map')
                             share_success = True
                             break
                     except Exception as e:
@@ -744,7 +744,7 @@ class QuarkPanFileManager:
                         error += 1
 
                 if not share_success:
-                    print('分享失败：', share_error_msg)
+                    print('Berbagi gagal：', share_error_msg)
                     error_data.append(i1)
         error_content = '\n'.join(error_data)
         save_config(path='./share/retry.txt', content=error_content, mode='w')
@@ -776,7 +776,12 @@ def print_menu() -> None:
     print("║                                  Author: Hmily  Version: 0.0.6                                       ║")
     print("║                          GitHub: https://github.com/ihmily/QuarkPanTool                              ║")
     print("╠══════════════════════════════════════════════════════════════════════════════════════════════════════╣")
-    print("║     1.分享地址转存文件   2.批量生成分享链接   3.切换网盘保存目录   4.创建网盘文件夹   5.下载到本地   6.登录        ║")
+    print("║     1.Bagikan alamat untuk menyimpan file.                                                           ║")
+    print("║     2.Buat tautan berbagi secara massal.                                                             ║")
+    print("║     3.Beralih ke direktori penyimpanan cloud drive.                                                  ║")
+    print("║     4.Buat folder penyimpanan cloud.                                                                 ║")
+    print("║     5.Unduh ke lokal                                                                                 ║")
+    print("║     6.Masuk                                                                                          ║")
     print("╚══════════════════════════════════════════════════════════════════════════════════════════════════════╝")
 
 
@@ -787,66 +792,66 @@ if __name__ == '__main__':
 
         to_dir_id, to_dir_name = asyncio.run(quark_file_manager.load_folder_id())
 
-        input_text = input("请输入你的选择(1—6或q退出)：")
+        input_text = input("Masukkan pilihan (1-6 atau q untuk keluar).：")
 
         if input_text and input_text.strip() in ['q', 'Q']:
-            print("已退出程序！")
+            print("Program telah berakhir.！")
             sys.exit(0)
 
         if input_text and input_text.strip() in [str(i) for i in range(1, 7)]:
             if input_text.strip() == '1':
-                save_option = input("是否批量转存(1是 2否)：")
+                save_option = input("Transfer massal?(1.Ya 2.Tidak)：")
                 if save_option and save_option == '1':
                     try:
                         urls = load_url_file('./url.txt')
                         if not urls:
-                            custom_print('\n分享地址为空！请先在url.txt文件中输入分享地址(一行一个)')
+                            custom_print('\nAlamat berbagi kosong! Silakan masukkan alamat berbagi (satu alamat per baris) di file url.txt terlebih dahulu.')
                             continue
 
-                        custom_print(f"\r检测到url.txt文件中有{len(urls)}条分享链接")
-                        ok = input("请你确认是否开始批量保存(确认请按2):")
+                        custom_print(f"\File url.txt terdeteksi berisi{len(urls)}Bagikan tautan")
+                        ok = input("Konfirmasi apakah Anda ingin memulai penyimpanan massal (tekan 2 untuk konfirmasi).:")
                         if ok and ok.strip() == '2':
                             for index, url in enumerate(urls):
-                                print(f"正在转存第{index + 1}个")
+                                print(f"Saat ini sedang mentransfer yang pertama...{index + 1}个")
                                 asyncio.run(quark_file_manager.run(url.strip(), to_dir_id))
                     except FileNotFoundError:
                         with open('url.txt', 'w', encoding='utf-8'):
                             sys.exit(-1)
                 else:
-                    url = input("请输入夸克文件分享地址：")
+                    url = input("Silakan masukkan alamat berbagi file Quark.：")
                     if url and len(url.strip()) > 20:
                         asyncio.run(quark_file_manager.run(url.strip(), to_dir_id))
 
             elif input_text.strip() == '2':
-                share_option = input("请输入你的选择(1分享 2重试分享)：")
+                share_option = input("Silakan masukkan pilihan Anda (1 Bagikan 2 Coba lagi berbagi)：")
                 if share_option and share_option == '1':
-                    url = input("请输入需要分享的文件夹网页端页面地址：")
+                    url = input("Silakan masukkan alamat halaman web dari folder yang ingin Anda bagikan.：")
                     if not url or len(url.strip()) < 20:
                         continue
                 else:
                     try:
                         url = read_config(path='./share/retry.txt', mode='r')
                         if not url:
-                            print('\nretry.txt 为空！请检查文件')
+                            print('\nretry.txt Kosong! Silakan periksa file tersebut.')
                             continue
                     except FileNotFoundError:
                         save_config('./share/retry.txt', content='')
-                        print('\nshare/retry.txt 文件为空！')
+                        print('\nshare/retry.txt Berkas tersebut kosong.！')
                         continue
 
                 expired_option = {"1": 2, "2": 3, "3": 4, "4": 1}
-                print("1.1天  2.7天  3.30天  4.永久")
-                select_option = input("请输入分享时长选项：")
+                print("1. 1 hari 2. 7 hari 3. 30 hari 4. Permanen")
+                select_option = input("Silakan masukkan opsi durasi berbagi.：")
                 _expired_type = expired_option.get(select_option, 4)
-                is_private = input("是否加密(1否/2是)：")
+                is_private = input("Enkripsi diperlukan (1 Tidak / 2 Ya)：")
                 url_encrypt = 2 if is_private == '2' else 1
-                passcode = input('请输入你想设置的分享提取码(直接回车，可随机生成):') if url_encrypt == 2 else ''
+                passcode = input('Silakan masukkan kode ekstraksi berbagi yang ingin Anda atur (cukup tekan Enter, kode dapat dihasilkan secara acak).:') if url_encrypt == 2 else ''
 
-                print("\n\r请选择遍历深度：")
-                print("0.不遍历（只分享根目录-默认）")
-                print("1.遍历只分享一级目录")
+                print("\n\rSilakan pilih kedalaman penelusuran：")
+                print("0.Jangan melakukan traverse (hanya berbagi direktori root - default) ")
+                print("1.Penelusuran hanya berbagi direktori tingkat pertama.")
                 print("2.遍历只分享两级目录\n")
-                traverse_option = input("请输入选项(0/1/2)：")
+                traverse_option = input("Silakan masukkan pilihan Anda (0/1/2)：")
                 _traverse_depth = 0  # 默认只分享根目录
                 if traverse_option in ['1', '2']:
                     _traverse_depth = int(traverse_option)
@@ -861,26 +866,26 @@ if __name__ == '__main__':
 
             elif input_text.strip() == '3':
                 to_dir_id, to_dir_name = asyncio.run(quark_file_manager.load_folder_id(renew=True))
-                custom_print(f"已切换保存目录至网盘 {to_dir_name} 文件夹\n")
+                custom_print(f"Direktori penyimpanan telah diubah ke penyimpanan cloud. {to_dir_name} Map\n")
 
             elif input_text.strip() == '4':
-                create_name = input("请输入需要创建的文件夹名称：")
+                create_name = input("Silakan masukkan nama folder yang ingin Anda buat.：")
                 if create_name:
                     asyncio.run(quark_file_manager.create_dir(create_name.strip()))
                 else:
-                    custom_print("创建的文件夹名称不可为空！", error_msg=True)
+                    custom_print("Nama folder yang Anda buat tidak boleh kosong!", error_msg=True)
 
             elif input_text.strip() == '5':
                 try:
-                    is_batch = input("输入你的选择(1单个地址下载，2批量下载):")
+                    is_batch = input("Masukkan pilihan Anda (1. Unduh dari satu alamat, 2. Unduh secara bertahap):")
                     if is_batch:
                         if is_batch.strip() == '1':
-                            url = input("请输入夸克文件分享地址：")
+                            url = input("Silakan masukkan alamat berbagi file Quark.：")
                             asyncio.run(quark_file_manager.run(url.strip(), to_dir_id, download=True))
                         elif is_batch.strip() == '2':
                             urls = load_url_file('./url.txt')
                             if not urls:
-                                print('\n分享地址为空！请先在url.txt文件中输入分享地址(一行一个)')
+                                print('\nAlamat berbagi kosong! Silakan masukkan alamat berbagi (satu alamat per baris) di file url.txt terlebih dahulu.')
                                 continue
 
                             for index, url in enumerate(urls):
@@ -896,4 +901,4 @@ if __name__ == '__main__':
                 quark_file_manager.get_cookies()
 
         else:
-            custom_print("输入无效，请重新输入")
+            custom_print("Masukan tidak valid, harap masukkan kembali.")
