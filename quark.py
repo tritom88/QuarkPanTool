@@ -850,7 +850,7 @@ if __name__ == '__main__':
                 print("\n\rSilakan pilih kedalaman penelusuran：")
                 print("0.Jangan melakukan traverse (hanya berbagi direktori root - default) ")
                 print("1.Penelusuran hanya berbagi direktori tingkat pertama.")
-                print("2.遍历只分享两级目录\n")
+                print("2.Hanya menelusuri dua level direktori\n")
                 traverse_option = input("Silakan masukkan pilihan Anda (0/1/2)：")
                 _traverse_depth = 0  # 默认只分享根目录
                 if traverse_option in ['1', '2']:
