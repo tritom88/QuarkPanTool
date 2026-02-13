@@ -808,7 +808,7 @@ if __name__ == '__main__':
                             custom_print('\nAlamat berbagi kosong! Silakan masukkan alamat berbagi (satu alamat per baris) di file url.txt terlebih dahulu.')
                             continue
 
-                        custom_print(f"\File url.txt terdeteksi berisi{len(urls)}Bagikan tautan")
+                        custom_print(f"\rFile url.txt terdeteksi berisi{len(urls)}Bagikan tautan")
                         ok = input("Konfirmasi apakah Anda ingin memulai penyimpanan massal (tekan 2 untuk konfirmasi).:")
                         if ok and ok.strip() == '2':
                             for index, url in enumerate(urls):
